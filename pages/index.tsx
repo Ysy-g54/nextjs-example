@@ -1,13 +1,33 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
-import { Todo } from "../types/todo";
+import { Todo } from "../types/Todo";
 
 export default function Home() {
-  const [todoList, setTodoList] = useState<Todo[]>([
-    { id: "0", name: "dummy0", description: "hogehoge" },
-    { id: "1", name: "dummy1", description: "fugafuga" },
-  ]);
+  const [todoList, setTodoList] = useState<Todo[]>([]);
+
+  const openCreateTodoDialog = () => {
+    const name = window.prompt();
+    if (!name) {
+      alert("必須入力です");
+      return;
+    }
+    addTodo(name);
+  };
+
+  const addTodo = (name: string) => {
+    const data = [
+      ...todoList,
+      { id: crypto.randomUUID(), name, description: "" },
+    ];
+    setTodoList(data);
+    localStorage.setItem("todoList", JSON.stringify(data));
+  };
+
+  useEffect(() => {
+    const addedTodoList = localStorage.getItem("todoList");
+    setTodoList(addedTodoList ? JSON.parse(addedTodoList) : []);
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -19,10 +39,11 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>TODO 一覧</h1>
-        {todoList.map((todo) => (
-          <div key={todo.id} className={styles.grid}>
-            <h2>{todo.name}</h2>
-            <p>{todo.description}</p>
+        <button onClick={openCreateTodoDialog}>TODOを追加する</button>
+        {todoList.map(({ id, name, description }) => (
+          <div key={id} className={styles.grid}>
+            <h2>{name}</h2>
+            <p>{description}</p>
           </div>
         ))}
       </main>
